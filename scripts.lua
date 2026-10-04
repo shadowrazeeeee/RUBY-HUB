@@ -678,4 +678,283 @@ vkInputCorner.Parent = vkInput
 local keys = {
     "1","2","3","4","5","6","7","8","9","0",
     "q","w","e","r","t","y","u","i","o","p",
-    "a","s","d
+    "a","s","d","f","g","h","j","k","l",
+    "z","x","c","v","b","n","m"
+}
+
+local vkGrid = Instance.new("Frame")
+vkGrid.Size = UDim2.new(1, -20, 1, -60)
+vkGrid.Position = UDim2.new(0, 10, 0, 55)
+vkGrid.BackgroundTransparency = 1
+vkGrid.Parent = virtualKeyboard
+
+local vkLayout = Instance.new("UIGridLayout")
+vkLayout.CellSize = UDim2.new(0, 26, 0, 26)
+vkLayout.CellPadding = UDim2.new(0, 2, 0, 2)
+vkLayout.Parent = vkGrid
+
+for _, key in ipairs(keys) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 26, 0, 26)
+    btn.BackgroundColor3 = Color3.fromRGB(60, 30, 40)
+    btn.Text = key
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextScaled = true
+    btn.Font = Enum.Font.GothamBold
+    btn.Parent = vkGrid
+    
+    local kCorner = Instance.new("UICorner")
+    kCorner.CornerRadius = UDim.new(0, 4)
+    kCorner.Parent = btn
+    
+    btn.MouseButton1Click:Connect(function()
+        vkInput.Text = vkInput.Text .. key
+    end)
+end
+
+local spaceBtn = Instance.new("TextButton")
+spaceBtn.Size = UDim2.new(0, 100, 0, 26)
+spaceBtn.Position = UDim2.new(0, 10, 0, 170)
+spaceBtn.BackgroundColor3 = Color3.fromRGB(60, 30, 40)
+spaceBtn.Text = "Space"
+spaceBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+spaceBtn.TextScaled = true
+spaceBtn.Font = Enum.Font.GothamBold
+spaceBtn.Parent = virtualKeyboard
+
+local delBtn = Instance.new("TextButton")
+delBtn.Size = UDim2.new(0, 60, 0, 26)
+delBtn.Position = UDim2.new(0, 115, 0, 170)
+delBtn.BackgroundColor3 = Color3.fromRGB(180, 25, 45)
+delBtn.Text = "Del"
+delBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+delBtn.TextScaled = true
+delBtn.Font = Enum.Font.GothamBold
+delBtn.Parent = virtualKeyboard
+
+local enterBtn = Instance.new("TextButton")
+enterBtn.Size = UDim2.new(0, 60, 0, 26)
+enterBtn.Position = UDim2.new(0, 180, 0, 170)
+enterBtn.BackgroundColor3 = Color3.fromRGB(180, 25, 45)
+enterBtn.Text = "Enter"
+enterBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+enterBtn.TextScaled = true
+enterBtn.Font = Enum.Font.GothamBold
+enterBtn.Parent = virtualKeyboard
+
+spaceBtn.MouseButton1Click:Connect(function()
+    vkInput.Text = vkInput.Text .. " "
+end)
+delBtn.MouseButton1Click:Connect(function()
+    vkInput.Text = vkInput.Text:sub(1, -2)
+end)
+enterBtn.MouseButton1Click:Connect(function()
+    virtualKeyboard.Visible = false
+end)
+
+minimizeBtn.MouseButton1Click:Connect(function()
+    isMinimized = true
+    mainFrame.Visible = false
+    minimizedFrame.Visible = true
+    openBtn.Visible = true
+end)
+
+openBtn.MouseButton1Click:Connect(function()
+    isMinimized = false
+    minimizedFrame.Visible = false
+    openBtn.Visible = false
+    mainFrame.Visible = true
+end)
+
+minimizedFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        isMinimized = false
+        minimizedFrame.Visible = false
+        openBtn.Visible = false
+        mainFrame.Visible = true
+    end
+end)
+
+UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.KeyCode == Enum.KeyCode.LeftControl then
+        isMinimized = not isMinimized
+        mainFrame.Visible = not isMinimized
+        minimizedFrame.Visible = isMinimized
+        openBtn.Visible = isMinimized
+    end
+end)
+
+local vkToggleBtn = Instance.new("TextButton")
+vkToggleBtn.Size = UDim2.new(0, 60, 0, 30)
+vkToggleBtn.Position = UDim2.new(1, -70, 0.5, 60)
+vkToggleBtn.BackgroundColor3 = Color3.fromRGB(180, 25, 45)
+vkToggleBtn.Text = "⌨"
+vkToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+vkToggleBtn.TextScaled = true
+vkToggleBtn.Font = Enum.Font.GothamBold
+vkToggleBtn.Parent = ScreenGui
+
+local vkToggleCorner = Instance.new("UICorner")
+vkToggleCorner.CornerRadius = UDim.new(0, 8)
+vkToggleCorner.Parent = vkToggleBtn
+
+vkToggleBtn.MouseButton1Click:Connect(function()
+    virtualKeyboard.Visible = not virtualKeyboard.Visible
+end)
+
+-- ============ ВИЗУАЛЫ (ESP) ============
+local espObjects = {}
+RunService.RenderStepped:Connect(function()
+    for _, obj in pairs(espObjects) do
+        if obj.box then obj.box:Remove() end
+        if obj.name then obj.name:Remove() end
+    end
+    espObjects = {}
+    
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local head = player.Character:FindFirstChild("Head")
+            local hum = player.Character:FindFirstChildOfClass("Humanoid")
+            if head and hum and hum.Health > 0 then
+                local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
+                if onScreen then
+                    if CONFIG.PlayerOverlay then
+                        local box = Drawing.new("Square")
+                        box.Thickness = 1
+                        box.Color = Color3.fromRGB(255, 60, 60)
+                        box.Size = Vector2.new(50, 70)
+                        box.Position = Vector2.new(screenPos.X - 25, screenPos.Y - 35)
+                        box.Visible = true
+                        table.insert(espObjects, {box = box})
+                    end
+                    if CONFIG.NameLabels then
+                        local nameTag = Drawing.new("Text")
+                        nameTag.Size = 14
+                        nameTag.Center = true
+                        nameTag.Outline = true
+                        nameTag.Color = Color3.fromRGB(255, 255, 255)
+                        nameTag.Position = Vector2.new(screenPos.X, screenPos.Y - 50)
+                        nameTag.Text = player.Name
+                        nameTag.Visible = true
+                        table.insert(espObjects, {name = nameTag})
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- ============ АВТО-ФУНКЦИИ ============
+RunService.Heartbeat:Connect(function()
+    if not CONFIG.AutoGunCollect then return end
+    local char = LocalPlayer.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    for _, obj in pairs(workspace:GetChildren()) do
+        if obj:IsA("Tool") and obj:FindFirstChild("Handle") then
+            local dist = (char.HumanoidRootPart.Position - obj.Handle.Position).Magnitude
+            if dist < 15 then
+                firetouchinterest(char.HumanoidRootPart, obj.Handle, 0)
+                task.wait(0.05)
+                firetouchinterest(char.HumanoidRootPart, obj.Handle, 1)
+            end
+        end
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    if not CONFIG.HitboxExtender then return end
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character then
+            local hrp = p.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.Size = Vector3.new(CONFIG.HitboxSize, CONFIG.HitboxSize, CONFIG.HitboxSize)
+                hrp.Transparency = 1
+                hrp.CanCollide = false
+            end
+        end
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    if not CONFIG.AntiFling then return end
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    if hrp.Velocity.Magnitude > 100 then
+        hrp.Velocity = Vector3.new(0, hrp.Velocity.Y, 0)
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    if not CONFIG.FlingEnabled then return end
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character then
+            local targetHrp = p.Character:FindFirstChild("HumanoidRootPart")
+            if targetHrp then
+                local dist = (hrp.Position - targetHrp.Position).Magnitude
+                if dist < 10 then
+                    targetHrp.Velocity = Vector3.new(
+                        math.random(-CONFIG.FlingPower, CONFIG.FlingPower),
+                        CONFIG.FlingPower,
+                        math.random(-CONFIG.FlingPower, CONFIG.FlingPower)
+                    )
+                end
+            end
+        end
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    if not CONFIG.SpeedGlitchEnabled then return end
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if hum then hum.WalkSpeed = 32 end
+end)
+
+RunService.Heartbeat:Connect(function()
+    if not CONFIG.WallHopEnabled then return end
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hrp or not hum then return end
+    if hum:GetState() == Enum.HumanoidStateType.Jumping or hum:GetState() == Enum.HumanoidStateType.Freefall then
+        local ray = Ray.new(hrp.Position, hrp.CFrame.LookVector * 5)
+        local hit, pos, normal = workspace:FindPartOnRay(ray, char)
+        if hit then
+            hrp.Velocity = normal * CONFIG.WallHopSpeed + Vector3.new(0, 50, 0)
+        end
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    if not CONFIG.ChinaHat then return end
+    local char = LocalPlayer.Character
+    if not char then return end
+    local head = char:FindFirstChild("Head")
+    if not head then return end
+    if head:FindFirstChild("RUBY_ChinaHat") then return end
+    local hat = Instance.new("Part")
+    hat.Name = "RUBY_ChinaHat"
+    hat.Shape = Enum.PartType.Cone
+    hat.Size = Vector3.new(3, 2, 3)
+    hat.Color = Color3.fromRGB(255, 200, 0)
+    hat.Material = Enum.Material.Neon
+    hat.CanCollide = false
+    hat.Massless = true
+    local weld = Instance.new("Weld")
+    weld.Part0 = head
+    weld.Part1 = hat
+    weld.C0 = CFrame.new(0, 1.5, 0)
+    weld.Parent = hat
+    hat.Parent = char
+end)
+
+print("[RUBY HUB] Загружен успешно. TG: @RubyHub_Script")
