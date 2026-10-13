@@ -1,0 +1,136 @@
+-- RUBY HUB — DOORS Loader
+-- TG: @RubyHub_Script
+
+-- ============ УВЕДОМЛЕНИЕ ПРИ ЗАГРУЗКЕ ============
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "RUBY HUB",
+    Text = "Загрузка скрипта для DOORS...",
+    Duration = 3
+})
+
+-- ============ ВАТЕРМАРКА RUBY HUB ============
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local watermarkGui = Instance.new("ScreenGui")
+watermarkGui.Name = "RUBY_HUB_WATERMARK"
+watermarkGui.ResetOnSpawn = false
+watermarkGui.IgnoreGuiInset = true
+watermarkGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local wmFrame = Instance.new("Frame")
+wmFrame.Size = UDim2.new(0, 210, 0, 22)
+wmFrame.Position = UDim2.new(1, -220, 0, 10)
+wmFrame.BackgroundColor3 = Color3.fromRGB(20, 10, 16)
+wmFrame.BackgroundTransparency = 0.3
+wmFrame.BorderSizePixel = 0
+wmFrame.Parent = watermarkGui
+
+local wmCorner = Instance.new("UICorner")
+wmCorner.CornerRadius = UDim.new(0, 6)
+wmCorner.Parent = wmFrame
+
+local wmStroke = Instance.new("UIStroke")
+wmStroke.Color = Color3.fromRGB(200, 30, 55)
+wmStroke.Thickness = 1
+wmStroke.Transparency = 0.3
+wmStroke.Parent = wmFrame
+
+local wmLabel = Instance.new("TextLabel")
+wmLabel.Size = UDim2.new(1, -8, 1, 0)
+wmLabel.Position = UDim2.new(0, 4, 0, 0)
+wmLabel.BackgroundTransparency = 1
+wmLabel.Text = "RUBY HUB | FPS: 0 | PING: 0ms"
+wmLabel.TextColor3 = Color3.fromRGB(255, 90, 110)
+wmLabel.TextScaled = true
+wmLabel.Font = Enum.Font.GothamBold
+wmLabel.TextXAlignment = Enum.TextXAlignment.Center
+wmLabel.Parent = wmFrame
+
+local fpsCount, fpsTime, currentFPS, currentPing = 0, 0, 0, 0
+RunService.RenderStepped:Connect(function(dt)
+    fpsCount = fpsCount + 1
+    fpsTime = fpsTime + dt
+    if fpsTime >= 1 then
+        currentFPS = fpsCount
+        fpsCount = 0
+        fpsTime = 0
+    end
+end)
+spawn(function()
+    while wmFrame.Parent do
+        task.wait(0.5)
+        local ok, ping = pcall(function()
+            return game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
+        end)
+        currentPing = ok and math.floor(ping) or 0
+        wmLabel.Text = string.format("RUBY HUB | FPS: %d | PING: %dms", currentFPS, currentPing)
+    end
+end)
+
+-- ============ КВАДРАТИК RUBY ============
+local toggleGui = Instance.new("ScreenGui")
+toggleGui.Name = "RUBY_HUB_TOGGLE"
+toggleGui.ResetOnSpawn = false
+toggleGui.IgnoreGuiInset = true
+toggleGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 60, 0, 60)
+toggleBtn.Position = UDim2.new(0, 20, 0.5, -30)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(35, 15, 20)
+toggleBtn.Text = "RUBY"
+toggleBtn.TextColor3 = Color3.fromRGB(255, 90, 110)
+toggleBtn.TextScaled = true
+toggleBtn.Font = Enum.Font.GothamBlack
+toggleBtn.Parent = toggleGui
+toggleBtn.Active = true
+toggleBtn.Draggable = true
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(0, 14)
+toggleCorner.Parent = toggleBtn
+
+local toggleStroke = Instance.new("UIStroke")
+toggleStroke.Color = Color3.fromRGB(200, 30, 55)
+toggleStroke.Thickness = 2
+toggleStroke.Parent = toggleBtn
+
+-- ============ ЗАГРУЗКА ОРИГИНАЛЬНОГО СКРИПТА ============
+local originalScripts = {
+    Abysall = "https://raw.githubusercontent.com/bocaj111004/Abysall/refs/heads/main/Loader.luau",
+    NOVA = "https://raw.githubusercontent.com/kyksikoid/Doors-Script/main/doors.lua",
+}
+
+-- Выбор скрипта (по умолчанию Abysall)
+local chosenScript = originalScripts.Abysall
+
+local success, err = pcall(function()
+    loadstring(game:HttpGet(chosenScript))()
+end)
+
+if success then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "RUBY HUB",
+        Text = "Скрипт загружен! TG: @RubyHub_Script",
+        Duration = 5
+    })
+    print("[RUBY HUB] Загружен успешно. TG: @RubyHub_Script")
+else
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "RUBY HUB",
+        Text = "Ошибка загрузки: " .. tostring(err),
+        Duration = 5
+    })
+    warn("[RUBY HUB] Ошибка: " .. tostring(err))
+end
+
+-- ============ КВАДРАТИК (ИНФО ПО КЛИКУ) ============
+toggleBtn.MouseButton1Click:Connect(function()
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "RUBY HUB",
+        Text = "TG: @RubyHub_Script | Скрипт загружен",
+        Duration = 3
+    })
+end)
